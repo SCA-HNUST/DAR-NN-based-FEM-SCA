@@ -13,8 +13,6 @@ At the attack stage, the trained reconstructor in DAR-NN is used independently a
 
 ![image](https://github.com/user-attachments/assets/ce7f54bc-953c-4050-9ca5-b19e8bfdcd26)
 
-# DAR-NN: Domain-Adversarial Reconstruction Neural Network for Side-Channel Analysis
-
 This repository contains two scripts:
 
 - **`DAR-NN_train.py`**: Builds and trains a domain-adversarial neural network for side-channel trace classification.
@@ -41,7 +39,7 @@ This repository contains two scripts:
 │       │   └── 1_ct.npy
 │       └── ...
 ├── DAR-NN_model/
-│   └── DAR-NN_4.h5          # Trained model for evaluation
+│   └── DAR-NN.h5          # Trained model for evaluation
 ```
 
 ---
@@ -51,10 +49,10 @@ This repository contains two scripts:
 ### 🔧 Description
 
 - Constructs a three-part neural architecture:
-  - A **denoising autoencoder** to reconstruct noisy traces.
-  - A **classifier** to predict AES keys.
+  - A **denoising autoencoder** to reconstruct noisy traces with a higher leakage level.
+  - A **classifier** to recover the AES subkey.
   - A **domain discriminator** to encourage device-invariant features via **gradient reversal**.
-- Trained with both classification and adversarial domain losses.
+- Trained with reconstruction, classification, and adversarial domain losses.
 
 ### ▶️ Run Training
 
@@ -64,10 +62,10 @@ python DAR-NN_train.py
 
 ### 📥 Input Files Required
 
-- `Data_processed/Train/noisy_traces.npy` – Noisy input traces
-- `Data_processed/Train/groundtruth_traces.npy` – Clean traces for reconstruction
-- `Data_processed/Train/key_labels.npy` – Key labels (0–255 class)
-- `Data_processed/Train/domain_labels.npy` – Domain labels (e.g., different devices)
+- `Data_processed/Train/noisy_traces.npy` – 'Noisy' traces captured by using the coaxial cable without any repetition for the classification task.
+- `Data_processed/Train/groundtruth_traces.npy` – 'Clean' traces captured by using the coaxial cable with 100 repetitions for the reconstruction task.
+- `Data_processed/Train/key_labels.npy` – The first byte of the SBox output for the last round (0–255)
+- `Data_processed/Train/domain_labels.npy` – Domain labels for recognizing which trace is reconstructed.
 
 ### 💾 Output
 
@@ -75,10 +73,8 @@ python DAR-NN_train.py
 - Trained model can be manually saved after training by modifying the script, e.g.:
 
 ```python
-model.save('DAR-NN_model/DAR-NN_4.h5')
+model.save('DAR-NN_model/DAR-NN.h5')
 ```
-
----
 
 ## 🧪 2. Evaluating the Model (`PGE_test.py`)
 
@@ -117,23 +113,11 @@ Inside each device folder `Data_processed/Test/D[6-10]/`:
 - Final print shows **average number of traces required** to correctly identify the key byte:
   
 ```
-Result for D6: 1458
-Result for D7: 1283
+Result for D6: 231
+Result for D7: 341
 ...
-Average num_rank across D6-D10: 1321.4
+Average num_rank across D6-D10: 288.2
 ```
-
----
-
-## 🛠 Dependencies
-
-Install the following Python packages:
-
-```bash
-pip install tensorflow numpy matplotlib tqdm h5py
-```
-
----
 
 ## 📌 Notes
 
@@ -148,7 +132,6 @@ pip install tensorflow numpy matplotlib tqdm h5py
 If you use this work, please cite or credit the relevant academic research or authorship.
 
 
-
 ## Database
 
-The first dataset is a far-field EM side-channel dataset, in which the traces are captured at 15 m distance in an office corridor environment from 10 nRF52 DK implementation of TinyAES.
+At this stage, we provide testing traces captured from 5 nRF52 SoK implementations of TinyAES captured at 15 m distance. We will further releas the remote traces with interfernce and remote traces captured at different distances after the paper is accepted.
